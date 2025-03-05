@@ -2,16 +2,30 @@
   <div>
     <!-- Holographic Promotional Banner -->
     <div class="holo-banner">
-      <span class="promo-text">✨😎Sign up for our newsletter and get insider access to special deals
-        and product launches!😎✨</span>
+      <span class="promo-text"
+        >✨😎Sign up for our newsletter and get insider access to special deals
+        and product launches!😎✨</span
+      >
     </div>
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand glitter" href="#">
-        <img src="@/assets/Letter_Logo-removebg-preview.png" class="logo" style="width: 100px; height: 100px" />
+        <img
+          src="@/assets/Letter_Logo-removebg-preview.png"
+          class="logo"
+          style="width: 100px; height: 100px"
+        />
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -24,8 +38,15 @@
           </li>
           <!-- Products Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="/products" id="navbarDropdown" role="button"
-              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a
+              class="nav-link dropdown-toggle"
+              href="/products"
+              id="navbarDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
               Products
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -35,7 +56,9 @@
             </div>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/booking">Book A Stylist</router-link>
+            <router-link class="nav-link" to="/booking"
+              >Book A Stylist</router-link
+            >
           </li>
           <li class="nav-item">
             <router-link class="nav-link" to="/contact">Contact Us</router-link>
@@ -47,9 +70,12 @@
         <!-- Icons Section -->
         <ul class="navbar-nav">
           <li class="nav-item">
-            <router-link v-if="isLoggedIn" to="/profile" class="nav-link"><i class="fas fa-user"></i>
-              Profile</router-link>
-            <router-link v-else to="/login" class="nav-link"><i class="fas fa-user"></i> Login</router-link>
+            <router-link v-if="isLoggedIn" to="/profile" class="nav-link"
+              ><i class="fas fa-user"></i> Profile</router-link
+            >
+            <router-link v-else to="/login" class="nav-link"
+              ><i class="fas fa-user"></i> Login</router-link
+            >
           </li>
           <li class="nav-item">
             <router-link to="/cart" class="nav-link">
@@ -63,44 +89,21 @@
 </template>
 
 <script>
-import { globalState } from '@/globalState';
-import { mapGetters } from 'vuex'; // Import mapGetters from Vuex
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   computed: {
-    ...mapGetters(['cartItems']), // Map the cartItems getter from Vuex
-    isLoggedIn() {
-      return globalState.isLoggedIn; // Get login state from global state
-    },
-    isAdminLoggedIn() {
-      return globalState.isAdminLoggedIn; // Get admin login state from global state
-    },
+    ...mapGetters(["isLoggedIn", "cartItems"]), // Map Vuex getters
     cartItemCount() {
-      return this.cartItems.reduce((count, item) => count + item.quantity, 0); // Calculate total items in cart
+      return this.cartItems.reduce((count, item) => count + item.quantity, 0); // Calculate cart item count
     },
   },
   created() {
     this.checkLoginStatus(); // Check login status when the component is created
-    this.checkAdminLoginStatus(); // Check admin login status when the component is created
+    this.loadCart(); // Load cart from localStorage
   },
   methods: {
-    checkLoginStatus() {
-      const user = localStorage.getItem('user'); // Check if user data exists
-      if (user) {
-        globalState.isLoggedIn = true; // Update global login state
-      }
-    },
-    checkAdminLoginStatus() {
-      const admin = localStorage.getItem('isAdminLoggedIn'); // Check if admin data exists
-      if (admin) {
-        globalState.isAdminLoggedIn = true; // Update global admin login state
-      }
-    },
-    redirectToLogin() {
-      // Store the intended destination before redirecting to login
-      localStorage.setItem('redirectTo', '/profile');
-      this.$router.push('/login'); // Redirect to the login page
-    },
+    ...mapActions(["checkLoginStatus", "loadCart"]), // Map Vuex actions
   },
 };
 </script>
@@ -114,15 +117,17 @@ export default {
 
 /* Holographic Banner Styling */
 .holo-banner {
-  background: linear-gradient(120deg,
-      #a8c0ff,
-      #3f92b5,
-      #a8c0ff,
-      #d6c1e0,
-      #ffb2d9,
-      #d6c1e0,
-      #a8c0ff,
-      #a8c0ff);
+  background: linear-gradient(
+    120deg,
+    #a8c0ff,
+    #3f92b5,
+    #a8c0ff,
+    #d6c1e0,
+    #ffb2d9,
+    #d6c1e0,
+    #a8c0ff,
+    #a8c0ff
+  );
   background-size: 400% 400%;
   animation: holoEffect 6s infinite alternate;
   color: rgb(4, 4, 4);

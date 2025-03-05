@@ -1,10 +1,11 @@
-import { createStore } from 'vuex';
-import CheckoutView from '@/views/CheckoutView.vue';
+import { createStore } from "vuex";
 
 export default createStore({
   state: {
     products: [], // Holds all products
     cart: [], // Holds products added to the cart
+    isLoggedIn: false, // Login state
+    isAdminLoggedIn: false, // Admin login state
   },
   mutations: {
     setProducts(state, payload) {
@@ -30,6 +31,12 @@ export default createStore({
     },
     setCart(state, cartItems) {
       state.cart = cartItems; // Set the cart state
+    },
+    setLoginStatus(state, status) {
+      state.isLoggedIn = status; // Update login state
+    },
+    setAdminLoginStatus(state, status) {
+      state.isAdminLoggedIn = status; // Update admin login state
     },
   },
   actions: {
@@ -68,6 +75,20 @@ export default createStore({
         console.error("Error fetching cart:", error);
       }
     },
+    login({ commit }) {
+      commit("setLoginStatus", true); // Set login state to true
+      localStorage.setItem("isLoggedIn", true); // Save login state to localStorage
+    },
+    logout({ commit }) {
+      commit("setLoginStatus", false); // Set login state to false
+      localStorage.removeItem("isLoggedIn"); // Remove login state from localStorage
+    },
+    checkLoginStatus({ commit }) {
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+      if (isLoggedIn) {
+        commit("setLoginStatus", true); // Restore login state from localStorage
+      }
+    },
   },
   getters: {
     cartItems: (state) => state.cart, // Getter for cart items
@@ -76,5 +97,7 @@ export default createStore({
         (total, product) => total + product.price * product.quantity,
         0
       ), // Getter for cart total
+    isLoggedIn: (state) => state.isLoggedIn, // Getter for login state
+    isAdminLoggedIn: (state) => state.isAdminLoggedIn, // Getter for admin login state
   },
 });

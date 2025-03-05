@@ -14,12 +14,24 @@
       <div v-if="!isForgotPassword && !isSignUp" class="form-box">
         <h3 class="title">Login</h3>
         <form @submit.prevent="login">
-          <input v-model="username" type="text" placeholder="Username" required />
-          <input v-model="password" type="password" placeholder="Password" required />
+          <input
+            v-model="username"
+            type="text"
+            placeholder="Username"
+            required
+          />
+          <input
+            v-model="password"
+            type="password"
+            placeholder="Password"
+            required
+          />
           <button type="submit" class="btn-primary">Sign In</button>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
           <div class="links">
-            <button type="button" @click="toggleForgotPassword">Forgot Password?</button>
+            <button type="button" @click="toggleForgotPassword">
+              Forgot Password?
+            </button>
             <button type="button" @click="toggleSignUp">Sign Up</button>
           </div>
         </form>
@@ -29,11 +41,23 @@
       <div v-if="isSignUp" class="form-box">
         <h3 class="title">Sign Up</h3>
         <form @submit.prevent="signUp">
-          <input v-model="newUsername" type="text" placeholder="Username" required />
+          <input
+            v-model="newUsername"
+            type="text"
+            placeholder="Username"
+            required
+          />
           <input v-model="newEmail" type="email" placeholder="Email" required />
-          <input v-model="newPassword" type="password" placeholder="Password" required />
+          <input
+            v-model="newPassword"
+            type="password"
+            placeholder="Password"
+            required
+          />
           <button type="submit" class="btn-primary">Create Account</button>
-          <button type="button" class="btn-secondary" @click="toggleSignUp">Back to Login</button>
+          <button type="button" class="btn-secondary" @click="toggleSignUp">
+            Back to Login
+          </button>
         </form>
       </div>
 
@@ -41,9 +65,20 @@
       <div v-if="isForgotPassword" class="form-box">
         <h3 class="title">Reset Password</h3>
         <form @submit.prevent="resetPassword">
-          <input v-model="resetEmail" type="email" placeholder="Enter your email" required />
+          <input
+            v-model="resetEmail"
+            type="email"
+            placeholder="Enter your email"
+            required
+          />
           <button type="submit" class="btn-primary">Send Reset Link</button>
-          <button type="button" class="btn-secondary" @click="toggleForgotPassword">Back to Login</button>
+          <button
+            type="button"
+            class="btn-secondary"
+            @click="toggleForgotPassword"
+          >
+            Back to Login
+          </button>
         </form>
       </div>
     </div>
@@ -51,118 +86,157 @@
 </template>
 
 <script>
-import { globalState } from '@/globalState';
+import { mapActions } from "vuex"; // Import mapActions to dispatch Vuex actions
 
 export default {
   data() {
     return {
-      username: '',
-      password: '',
-      newUsername: '',
-      newEmail: '',
-      newPassword: '',
-      resetEmail: '',
-      errorMessage: '',
+      username: "",
+      password: "",
+      newUsername: "",
+      newEmail: "",
+      newPassword: "",
+      resetEmail: "",
+      errorMessage: "",
       isForgotPassword: false,
       isSignUp: false,
-      isLoading: false
+      isLoading: false,
     };
   },
   methods: {
+    ...mapActions(["login"]), // Map the login action from Vuex
+
     async login() {
       this.isLoading = true;
-      this.errorMessage = '';
+      this.errorMessage = "";
       try {
-        const response = await fetch('http://localhost:3001/auth/login', {
-          method: 'POST',
+        const response = await fetch("http://localhost:3001/auth/login", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             username: this.username,
-            password: this.password
-          })
+            password: this.password,
+          }),
         });
         const data = await response.json();
         if (response.ok) {
-          localStorage.setItem('user', JSON.stringify({ username: data.username }));
-          this.$router.push({ name: 'booking' });
+          // Dispatch the login action to update Vuex state
+          this.$store.dispatch("login");
+
+          // Save user data to localStorage
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              username: data.username,
+              role: data.user.userRole,
+            })
+          );
+
+          alert(`Welcome, ${data.user.username}!`);
+
+          // Redirect based on user role
+          if (data.user.userRole === "admin") {
+            this.$router.push({ name: "admindashboard" });
+          } else {
+            const previousRoute = this.$route?.name;
+            if (previousRoute === "booking") {
+              this.$router.push({ name: "booking" });
+            } else {
+              this.$router.push({ name: "profile" });
+            }
+          }
         } else {
-          this.errorMessage = data.message || 'Invalid username or password';
+          this.errorMessage = data.message || "Invalid username or password";
         }
       } catch (error) {
-        this.errorMessage = 'Server error. Please try again later.';
+        this.errorMessage = "Server error. Please try again later.";
       } finally {
         this.isLoading = false;
       }
     },
+
     async signUp() {
       this.isLoading = true;
-      this.errorMessage = '';
+      this.errorMessage = "";
       try {
-        const response = await fetch('http://localhost:3001/auth/register', {
-          method: 'POST',
+        const response = await fetch("http://localhost:3001/auth/register", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             username: this.newUsername,
             email: this.newEmail,
-            password: this.newPassword
-          })
+            password: this.newPassword,
+          }),
         });
         const data = await response.json();
         if (response.ok) {
-          localStorage.setItem('user', JSON.stringify({ username: data.username, role: 'customer' }));
-          globalState.isLoggedIn = true;
+          // Dispatch the login action to update Vuex state
+          this.$store.dispatch("login");
+
+          // Save user data to localStorage
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ username: data.username, role: "customer" })
+          );
+
           alert(`Welcome, ${this.newUsername}. Your account has been created!`);
-          this.$router.push({ name: 'profile' }); // Redirect to profile after signup
+          this.$router.push({ name: "profile" }); // Redirect to profile after signup
         } else {
-          this.errorMessage = data.message || 'Error during sign up';
+          this.errorMessage = data.message || "Error during sign up";
         }
       } catch (error) {
-        this.errorMessage = 'Server error. Please try again later.';
+        this.errorMessage = "Server error. Please try again later.";
       } finally {
         this.isLoading = false;
       }
     },
+
     async resetPassword() {
       this.isLoading = true;
-      this.errorMessage = '';
+      this.errorMessage = "";
       try {
-        const response = await fetch('http://localhost:3001/auth/reset-password/1h', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: this.resetEmail
-          })
-        });
+        const response = await fetch(
+          "http://localhost:3001/auth/reset-password/1h",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: this.resetEmail,
+            }),
+          }
+        );
         const data = await response.json();
         if (response.ok) {
           alert(data.message);
           this.toggleForgotPassword();
         } else {
-          this.errorMessage = data.message || 'Error during password reset';
+          this.errorMessage = data.message || "Error during password reset";
         }
       } catch (error) {
-        this.errorMessage = 'Server error. Please try again later.';
+        this.errorMessage = "Server error. Please try again later.";
       } finally {
         this.isLoading = false;
       }
     },
+
     toggleForgotPassword() {
       this.isForgotPassword = !this.isForgotPassword;
       this.isSignUp = false;
-      this.errorMessage = '';
+      this.errorMessage = "";
     },
+
     toggleSignUp() {
       this.isSignUp = !this.isSignUp;
       this.isForgotPassword = false;
-      this.errorMessage = '';
-    }
-  }
+      this.errorMessage = "";
+    },
+  },
 };
 </script>
 
@@ -174,7 +248,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -2; /* Place it behind the video */
+  z-index: 0; /* Place it behind the video */
   background-color: rgba(209, 206, 194, 1); /* Set the background color */
   pointer-events: none; /* Allow clicks to pass through */
 }

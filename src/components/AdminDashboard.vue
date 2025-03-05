@@ -38,6 +38,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"; // Import mapActions to dispatch Vuex actions
+
 export default {
   name: "AdminDashboard",
   props: {
@@ -82,13 +84,16 @@ export default {
     };
   },
   methods: {
+    ...mapActions(["logout"]), // Map the logout action from Vuex
+
     handleLogout() {
-      this.$emit("logout");
+      this.logout(); // Dispatch the logout action
       this.$router.push("/login"); // Redirect to login page after logout
     },
   },
 };
 </script>
+
 <style scoped>
 /* General Styles */
 html,
@@ -194,4 +199,3 @@ body {
   object-fit: cover;
 }
 </style>
-

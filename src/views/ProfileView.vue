@@ -1,12 +1,16 @@
 <template>
   <div class="profile-container">
     <h1>Profile</h1>
-    
+
     <div v-if="user" class="profile-content">
       <!-- Profile Picture -->
       <div class="profile-pic-container">
-        <img :src="user.profilePic || defaultProfilePic" alt="Profile Picture" class="profile-pic">
-        <input type="file" @change="uploadProfilePic" accept="image/*">
+        <img
+          :src="user.profilePic || defaultProfilePic"
+          alt="Profile Picture"
+          class="profile-pic"
+        />
+        <input type="file" @change="uploadProfilePic" accept="image/*" />
       </div>
 
       <div class="profile-info">
@@ -20,21 +24,35 @@
           <li v-for="(address, index) in user.addresses" :key="index">
             <div v-if="editingAddressIndex !== index">
               {{ address }}
-              <button @click="editAddress(index, address)" class="btn-secondary">Edit</button>
-              <button @click="deleteAddress(index)" class="btn-secondary">Delete</button>
+              <button
+                @click="editAddress(index, address)"
+                class="btn-secondary"
+              >
+                Edit
+              </button>
+              <button @click="deleteAddress(index)" class="btn-secondary">
+                Delete
+              </button>
             </div>
             <div v-else>
-              <input v-model="newAddress" placeholder="Edit address" required>
-              <button @click="submitEditedAddress(index)" class="btn-secondary">Save</button>
+              <input v-model="newAddress" placeholder="Edit address" required />
+              <button @click="submitEditedAddress(index)" class="btn-secondary">
+                Save
+              </button>
               <button @click="cancelEdit" class="btn-secondary">Cancel</button>
             </div>
           </li>
         </ul>
         <p v-else>No saved addresses</p>
-        
+
         <!-- Address Form -->
         <form @submit.prevent="submitAddress" class="address-form">
-          <input type="text" v-model="newAddress" placeholder="Enter new address" required>
+          <input
+            type="text"
+            v-model="newAddress"
+            placeholder="Enter new address"
+            required
+          />
           <button type="submit" class="btn-secondary">Add Address</button>
         </form>
       </div>
@@ -43,7 +61,8 @@
         <h2>Order History</h2>
         <ul v-if="user && user.orders && user.orders.length">
           <li v-for="order in user.orders" :key="order.id">
-            Order #{{ order.id }} - {{ order.date }} - <strong>${{ order.total }}</strong>
+            Order #{{ order.id }} - {{ order.date }} -
+            <strong>${{ order.total }}</strong>
           </li>
         </ul>
         <p v-else>No orders yet</p>
@@ -51,63 +70,85 @@
 
       <div class="section">
         <h2>Wishlist</h2>
-       <ul v-if="user && user.wishlist && user.wishlist.length">
-          <li v-for="(item, index) in user.wishlist" :key="index">{{ item }}</li>
+        <ul v-if="user && user.wishlist && user.wishlist.length">
+          <li v-for="(item, index) in user.wishlist" :key="index">
+            {{ item }}
+          </li>
         </ul>
         <p v-else>Wishlist is empty</p>
       </div>
 
       <div class="account-actions">
-        <button @click="changePassword" class="btn-secondary">Change Password</button>
+        <button @click="changePassword" class="btn-secondary">
+          Change Password
+        </button>
         <button @click="logout" class="btn-primary">Logout</button>
       </div>
     </div>
 
     <div v-else class="not-logged-in">
-      <p>You are not logged in. Please <router-link to="/login">login</router-link> to view your profile.</p>
+      <p>
+        You are not logged in. Please
+        <router-link to="/login">login</router-link> to view your profile.
+      </p>
     </div>
   </div>
 </template>
 
 <script>
-import { globalState } from '@/globalState';
+import { mapActions } from "vuex"; // Import mapActions to dispatch Vuex actions
 
 export default {
   data() {
     return {
-      user: JSON.parse(localStorage.getItem('user')) || {
-        username: '',
-        email: '',
+      user: JSON.parse(localStorage.getItem("user")) || {
+        username: "",
+        email: "",
         addresses: [],
         orders: [],
         wishlist: [],
-        profilePic: ''
+        profilePic: "",
       },
-      newAddress: '',
-      editingAddressIndex: null
+      newAddress: "",
+      editingAddressIndex: null,
     };
   },
   created() {
     this.checkLoginStatus();
   },
   methods: {
+    ...mapActions(["logout"]), // Map the logout action from Vuex
+
     checkLoginStatus() {
-      const user = localStorage.getItem('user');
+      const user = localStorage.getItem("user");
       if (user) {
         try {
           this.user = JSON.parse(user);
         } catch (error) {
           console.error("Invalid user data in localStorage", error);
-          this.user = { username: '', email: '', addresses: [], orders: [], wishlist: [], profilePic: '' };
+          this.user = {
+            username: "",
+            email: "",
+            addresses: [],
+            orders: [],
+            wishlist: [],
+            profilePic: "",
+          };
         }
       } else {
-        this.user = { username: '', email: '', addresses: [], orders: [], wishlist: [], profilePic: '' };
+        this.user = {
+          username: "",
+          email: "",
+          addresses: [],
+          orders: [],
+          wishlist: [],
+          profilePic: "",
+        };
       }
     },
     logout() {
-      localStorage.removeItem('user');
-      globalState.isLoggedIn = false;
-      this.$router.push({ name: 'login' });
+      this.$store.dispatch("logout"); // Dispatch the logout action
+      this.$router.push({ name: "login" }); // Redirect to login page
     },
     uploadProfilePic(event) {
       const file = event.target.files[0];
@@ -115,7 +156,7 @@ export default {
         const reader = new FileReader();
         reader.onload = (e) => {
           this.user.profilePic = e.target.result;
-          localStorage.setItem('user', JSON.stringify(this.user));
+          localStorage.setItem("user", JSON.stringify(this.user));
         };
         reader.readAsDataURL(file);
       }
@@ -124,10 +165,10 @@ export default {
       if (!this.user.addresses) {
         this.user.addresses = []; // Ensure addresses is an array
       }
-    
+
       if (this.newAddress.trim() !== "") {
         this.user.addresses.push(this.newAddress); // Push new address
-        localStorage.setItem('user', JSON.stringify(this.user)); // Save to localStorage
+        localStorage.setItem("user", JSON.stringify(this.user)); // Save to localStorage
         this.newAddress = ""; // Clear input field
       } else {
         alert("Please enter a valid address.");
@@ -140,7 +181,7 @@ export default {
     submitEditedAddress(index) {
       if (this.newAddress.trim() !== "") {
         this.user.addresses[index] = this.newAddress; // Edit address
-        localStorage.setItem('user', JSON.stringify(this.user)); // Save to localStorage
+        localStorage.setItem("user", JSON.stringify(this.user)); // Save to localStorage
         this.newAddress = ""; // Clear input field
         this.editingAddressIndex = null; // Exit edit mode
       } else {
@@ -153,12 +194,12 @@ export default {
     },
     deleteAddress(index) {
       this.user.addresses.splice(index, 1); // Remove address from array
-      localStorage.setItem('user', JSON.stringify(this.user)); // Save to localStorage
+      localStorage.setItem("user", JSON.stringify(this.user)); // Save to localStorage
     },
     changePassword() {
       alert("Password change feature coming soon!");
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -220,7 +261,8 @@ export default {
   margin-top: 20px;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
